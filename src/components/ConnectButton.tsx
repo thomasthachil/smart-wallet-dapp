@@ -88,7 +88,7 @@ export function ConnectButton() {
               disabled={!connector.ready || isPending}
             >
               {connector.name}
-              {isPending && connector.id === connectors.find(c => isPending)?.id && ' (connecting...)'}
+              {isPending && connector.id === connectors.find(c => c.id)?.id && ' (connecting...)'}
             </Button>
           ))}
         </div>
