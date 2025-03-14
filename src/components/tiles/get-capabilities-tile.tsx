@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 import { useAccount } from "wagmi"
-import { useWalletClient } from "wagmi"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, Shield, CheckCircle2 } from "lucide-react"
 import { ErrorMessage } from "@/components/custom/error-message"
-import { getCapabilities } from "viem/experimental"
+import { getCapabilities } from "@wagmi/core/experimental"
+import { config } from "@/lib/wagmi"
 
 type WalletCapability = {
   method: string
@@ -17,20 +17,18 @@ type WalletCapability = {
 
 export function GetCapabilitiesTile() {
   const { address } = useAccount()
-  const { data: walletClient } = useWalletClient()
-
   const [capabilities, setCapabilities] = useState<WalletCapability[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchCapabilities = async () => {
-    if (!address || !walletClient) return
+    if (!address) return
 
     setIsLoading(true)
     setError(null)
 
     try {
-      const result = await getCapabilities(walletClient)
+      const result = await getCapabilities(config)
       setCapabilities(Object.values(result).map(cap => ({
         method: cap.method,
         type: cap.type

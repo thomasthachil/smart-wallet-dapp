@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useAccount, usePublicClient } from "wagmi"
+import { useAccount } from "wagmi"
 import { parseEther } from "viem"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, SendHorizonal, CheckCircle2 } from "lucide-react"
 import { ErrorMessage } from "@/components/custom/error-message"
+import { sendCalls } from "@wagmi/core/experimental"
+import { config } from "@/lib/wagmi"
 
-// Define the shape of a wallet call
 type WalletCall = {
   method: 'eth_sendTransaction'
   params: [{
@@ -21,13 +22,8 @@ type WalletCall = {
   }]
 }
 
-type CustomPublicClient = {
-  request(args: { method: 'wallet_sendCalls'; params: [WalletCall[]] }): Promise<string>
-}
-
 export function SendCallsTile() {
   const { address } = useAccount()
-  const publicClient = usePublicClient() as unknown as CustomPublicClient
 
   const [recipient, setRecipient] = useState("")
   const [amount, setAmount] = useState("")
@@ -35,8 +31,8 @@ export function SendCallsTile() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const sendCalls = async () => {
-    if (!address || !publicClient || !recipient || !amount) return
+  const handleSendCalls = async () => {
+    if (!address || !recipient || !amount) return
 
     setIsLoading(true)
     setError(null)
@@ -57,10 +53,8 @@ export function SendCallsTile() {
         },
       ]
 
-      // This is a custom RPC method for EIP-5792
-      const result = await publicClient.request({
-        method: "wallet_sendCalls",
-        params: [calls],
+      const result = await sendCalls(config, {
+        calls,
       })
 
       setCallId(result)
@@ -131,7 +125,7 @@ export function SendCallsTile() {
       <CardFooter className="flex flex-col gap-3">
         <Button 
           className="w-full" 
-          onClick={sendCalls} 
+          onClick={handleSendCalls} 
           disabled={isLoading || !address || !recipient || !amount}
         >
           {isLoading ? "Sending Calls..." : "Send Calls"}

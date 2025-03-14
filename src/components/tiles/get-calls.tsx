@@ -1,6 +1,6 @@
 "use client"
 
-import { useAccount, usePublicClient } from "wagmi"
+import { useAccount } from "wagmi"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,36 +8,35 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { ErrorMessage } from "@/components/custom/error-message"
 import { Loader2, Activity } from "lucide-react"
+import { getCallsStatus } from '@wagmi/core/experimental'
+import { config } from "@/lib/wagmi"
 
 type CallStatus = {
-  id: string
-  status: string
-  txHash?: string
+  status: "PENDING" | "CONFIRMED"
+  receipts?: {
+    status: "success" | "reverted"
+    transactionHash: string
+  }[]
 }
 
 export function GetCallsStatusTile() {
   const { address } = useAccount()
-  const publicClient = usePublicClient()
   const [callId, setCallId] = useState("")
   const [callStatus, setCallStatus] = useState<CallStatus | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const getCallStatus = async () => {
+  const handleGetCallStatus = async () => {
     if (!address || !callId) return
 
     setIsLoading(true)
     setError(null)
 
     try {
-      // This is a custom RPC method for EIP-5792
-      // @ts-expect-error Viem types are not updated yet
-      const result = await publicClient.request({
-        method: "wallet_getCallsStatus",
-        params: [callId as `0x${string}`],
+      const status = await getCallsStatus(config, {
+        id: callId,
       })
-
-      setCallStatus(result)
+      setCallStatus(status)
     } catch (err) {
       console.error(err)
       setError(err instanceof Error ? err.message : "Failed to get call status")
@@ -73,12 +72,19 @@ export function GetCallsStatusTile() {
                 <Activity className="h-4 w-4" />
                 <span className="font-medium">Status:</span> {callStatus.status}
               </div>
-              {callStatus.txHash && (
-                <div>
-                  <span className="font-medium">Transaction Hash:</span>{" "}
-                  {callStatus.txHash}
+              {callStatus.receipts?.map((receipt, index) => (
+                <div key={receipt.transactionHash} className="grid gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Transaction {index + 1}:</span>
+                    <span className={receipt.status === "success" ? "text-green-500" : "text-red-500"}>
+                      {receipt.status}
+                    </span>
+                  </div>
+                  <div className="text-sm text-muted-foreground break-all">
+                    {receipt.transactionHash}
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         )}
@@ -86,7 +92,11 @@ export function GetCallsStatusTile() {
 
       <CardFooter className="flex flex-col gap-3">
         {error && <ErrorMessage message={error} />}
-        <Button className="w-full" onClick={getCallStatus} disabled={isLoading || !callId}>
+        <Button 
+          className="w-full" 
+          onClick={handleGetCallStatus} 
+          disabled={isLoading || !callId}
+        >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Get Status
         </Button>

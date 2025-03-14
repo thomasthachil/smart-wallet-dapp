@@ -9,8 +9,8 @@ export const unichain = defineChain({
   id: 130,
   name: "UniChain",
   nativeCurrency: {
-    name: "UNI",
-    symbol: "UNI",
+    name: "ETH",
+    symbol: "ETH",
     decimals: 18,
   },
   rpcUrls: {
@@ -19,7 +19,7 @@ export const unichain = defineChain({
   blockExplorers: {
     default: {
       name: "Unichain Explorer",
-      url: "https:/.uniscan.xyz",
+      url: "https://uniscan.xyz",
     },
   },
   testnet: false,
