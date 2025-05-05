@@ -58,6 +58,7 @@ export function SignTypedDataTile() {
 
   const chainId = useChainId()
   const domain = domainWithChainId(chainId)
+  const [messageToSign, setMessageToSign] = useState(JSON.stringify({ domain, types, value }, replacer, 2))
 
   const handleSign = async () => {
     try {
@@ -88,8 +89,9 @@ export function SignTypedDataTile() {
           <div className="grid w-full gap-2">
             <Label className="text-sm font-medium">Message to Sign</Label>
             <Textarea
-              readOnly
-              value={JSON.stringify({ domain, types, value }, replacer, 2)}
+              readOnly={false}
+              value={messageToSign}
+              onChange={(e) => setMessageToSign(e.target.value)}
               className="font-mono text-xs h-[180px] bg-slate-50/50"
             />
           </div>

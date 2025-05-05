@@ -2,7 +2,8 @@ import { http, type Transport } from 'wagmi'
 import { injected } from 'wagmi/connectors'
 import { createConfig } from 'wagmi'
 import { QueryClient } from '@tanstack/react-query'
-import { chains, mainnet, sepolia, arbitrum, base, unichain } from './chains'
+import { chains, mainnet, sepolia, arbitrum, base } from './chains'
+import { optimism, unichain, unichainSepolia } from 'wagmi/chains'
 
 // Create a query client
 export const queryClient = new QueryClient()
@@ -16,6 +17,8 @@ export const config = createConfig({
     [arbitrum.id]: http() as Transport,
     [base.id]: http() as Transport,
     [unichain.id]: http() as Transport,
+    [unichainSepolia.id]: http() as Transport,
+    [optimism.id]: http() as Transport,
   } as Record<(typeof chains)[number]['id'], Transport>,
   connectors: [
     injected(),
