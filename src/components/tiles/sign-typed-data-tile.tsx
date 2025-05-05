@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useSignTypedData } from "wagmi"
+import { useChainId, useSignTypedData } from "wagmi"
 import type { TypedDataDomain } from "viem"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -13,11 +13,11 @@ import { ErrorMessage } from "@/components/custom/error-message"
 type TypedDataField = { name: string; type: string }
 
 // Example EIP-712 typed data
-const domain: TypedDataDomain = {
+const domainWithChainId = (chainId: number): TypedDataDomain => ({
   name: 'Permit2',
-  chainId: 1,
+  chainId,
   verifyingContract: '0x000000000022D473030F116dDEE9F6B43aC78BA3' // Permit2 contract
-} as const
+} as const)
 
 const types = {
   PermitSingle: [
@@ -55,6 +55,9 @@ function replacer(_: string, value: unknown) {
 export function SignTypedDataTile() {
   const [signature, setSignature] = useState<`0x${string}` | null>(null)
   const { signTypedDataAsync: signTypedData, status, error } = useSignTypedData()
+
+  const chainId = useChainId()
+  const domain = domainWithChainId(chainId)
 
   const handleSign = async () => {
     try {
